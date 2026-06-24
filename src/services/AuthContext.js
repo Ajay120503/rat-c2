@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authAPI } from './api';
+import { connectSocket, disconnectSocket } from './socket';
 
 const AuthContext = createContext(null);
 
@@ -38,6 +39,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('rat_token', res.data.token);
         localStorage.setItem('rat_admin', JSON.stringify(res.data.admin));
         setAdmin(res.data.admin);
+        // Connect to WebSocket for real-time updates
+        connectSocket(res.data.token);
         return true;
       }
       return false;
@@ -48,6 +51,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    disconnectSocket();
     localStorage.removeItem('rat_token');
     localStorage.removeItem('rat_admin');
     setAdmin(null);

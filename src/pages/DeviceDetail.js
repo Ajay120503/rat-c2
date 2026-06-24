@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { devicesAPI, dataAPI, commandsAPI } from '../services/api';
+import { addSocketListener, removeSocketListener } from '../services/socket';
 import { toast } from 'react-toastify';
 import {
   FiSmartphone,
@@ -101,9 +102,38 @@ export default function DeviceDetail() {
   useEffect(() => {
     setData({});
     loadData();
-    const interval = setInterval(loadData, 10000);
-    return () => clearInterval(interval);
-  }, [loadData]);
+
+    // Listen for real-time command status updates via WebSocket
+    const socketId = `device-detail-${deviceId}`;
+    addSocketListener(socketId, (event, payload) => {
+      if (event === 'command:updated' && payload.deviceId === deviceId) {
+        // Quick refresh on command completion (photo/recording arrived)
+        if (payload.status === 'completed') {
+          const photoTypes = ['capture_photo_front', 'capture_photo_back'];
+          const recordingTypes = ['record_audio'];
+          if (photoTypes.includes(payload.type)) {
+            loadData(); // refresh to show new photo
+          } else if (recordingTypes.includes(payload.type)) {
+            loadData(); // refresh to show new recording
+          }
+        }
+        // Update device online status
+        loadDevice();
+      }
+      if (event === 'device:online' && payload.deviceId === deviceId) {
+        loadDevice();
+      }
+      if (event === 'device:offline' && payload.deviceId === deviceId) {
+        loadDevice();
+      }
+    });
+
+    const interval = setInterval(loadData, 15000); // reduced polling (socket handles real-time)
+    return () => {
+      clearInterval(interval);
+      removeSocketListener(socketId);
+    };
+  }, [loadData, deviceId]);
 
   const sendCommand = async (type, params = {}) => {
     setSendingCmd(type);
