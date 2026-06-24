@@ -47,6 +47,8 @@ export const devicesAPI = {
 // Data
 export const dataAPI = {
   getDeviceData: (deviceId, params) => api.get(`/data/${deviceId}`, { params }),
+  deletePhoto: (photoId) => api.delete(`/data/photo/${photoId}`),
+  deleteRecording: (recordingId) => api.delete(`/data/recording/${recordingId}`),
 };
 
 // Commands
