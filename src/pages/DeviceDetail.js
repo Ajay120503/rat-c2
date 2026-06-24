@@ -42,6 +42,15 @@ const DATA_TABS = ['locations', 'sms', 'calllogs', 'contacts', 'photos', 'record
 // Uploads are served at /uploads (not /api/uploads), so strip /api from the base URL
 const UPLOADS_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
 
+// Cloudinary URLs are full URLs (start with http). Local paths need the base URL prepended.
+function resolveMediaUrl(filePath) {
+  if (!filePath) return '';
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    return filePath; // Cloudinary full URL
+  }
+  return `${UPLOADS_BASE_URL}${filePath}`; // Local path
+}
+
 const ANDROID_VERSION_MAP = {
   29: '10', 30: '11', 31: '12', 32: '12L',
   33: '13', 34: '14', 35: '15', 36: '16',
@@ -373,7 +382,7 @@ function renderDataContent(tab, items, refresh) {
             <div key={i} className="bg-dark-700/50 rounded-lg p-2">
               {item.filePath ? (
                 <img
-                  src={`${UPLOADS_BASE_URL}${item.filePath}`}
+                  src={resolveMediaUrl(item.filePath)}
                   alt={item.fileName}
                   className="w-full h-32 object-cover rounded-lg"
                   onError={(e) => { e.target.style.display = 'none'; }}
@@ -404,13 +413,13 @@ function renderDataContent(tab, items, refresh) {
                 <audio
                   controls
                   className="mt-2 w-full h-11"
-                  src={`${UPLOADS_BASE_URL}${item.filePath}`}
+                  src={resolveMediaUrl(item.filePath)}
                   preload="metadata"
                 >
                   Your browser does not support this audio format.
                   <br />
                   <a
-                    href={`${UPLOADS_BASE_URL}${item.filePath}`}
+                    href={resolveMediaUrl(item.filePath)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary-400 underline"
